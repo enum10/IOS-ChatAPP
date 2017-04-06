@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import Firebase
 
 class LoginViewController: UIViewController {
+    
+    var ref: FIRDatabaseReference!
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -26,6 +29,8 @@ class LoginViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
+        
+        button.addTarget(self, action: #selector(handleRegister), for: .touchUpInside)
         return button
     }()
     
@@ -79,6 +84,38 @@ class LoginViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
+    
+    func handleRegister(){
+        guard let email = emailTextField.text, let password = passwordTextField.text,
+            let name = nameTextField.text else{
+            print("Form is not valid")
+            return
+        }
+        
+        FIRAuth.auth()?.createUser(withEmail: email, password: password, completion: { (user: FIRUser?, error) in
+            
+            if error != nil{
+                print(error ?? "")
+                return
+            }
+            
+            guard let uid = user?.uid else{
+                return
+            }
+            
+            self.ref = FIRDatabase.database().reference(fromURL: "https://chat-ios-b7516.firebaseio.com/").child("users").child(uid)
+            
+            let values = ["name": name, "email": email]
+            self.ref.updateChildValues(values, withCompletionBlock: { (err, ref) in
+                if err != nil{
+                    print(err ?? "")
+                    return
+                }
+                
+                print("Successfully add user")
+            })
+        })
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
