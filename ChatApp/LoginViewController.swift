@@ -79,11 +79,13 @@ class LoginViewController: UIViewController {
         return view
     }()
     
-    let logoImage: UIImageView = {
+    lazy var logoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "splash")
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleSelectProfileImageView)))
+        imageView.isUserInteractionEnabled = true
         return imageView
     }()
     
@@ -138,38 +140,6 @@ class LoginViewController: UIViewController {
             }
             
             self.dismiss(animated: true, completion: nil)
-        })
-    }
-    
-    func handleRegister(){
-        guard let email = emailTextField.text, let password = passwordTextField.text,
-            let name = nameTextField.text else{
-            print("Form is not valid")
-            return
-        }
-        
-        FIRAuth.auth()?.createUser(withEmail: email, password: password, completion: { (user: FIRUser?, error) in
-            
-            if error != nil{
-                print(error ?? "")
-                return
-            }
-            
-            guard let uid = user?.uid else{
-                return
-            }
-            
-            self.ref = FIRDatabase.database().reference(fromURL: "https://chat-ios-b7516.firebaseio.com/").child("users").child(uid)
-            
-            let values = ["name": name, "email": email]
-            self.ref.updateChildValues(values, withCompletionBlock: { (err, ref) in
-                if err != nil{
-                    print(err ?? "")
-                    return
-                }
-                
-                self.dismiss(animated: true, completion: nil)
-            })
         })
     }
     
