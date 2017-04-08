@@ -79,6 +79,12 @@ class LoginViewController: UIViewController {
         return view
     }()
     
+    var logoImageSelectedView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "noprofile")
+        return imageView
+    }()
+    
     lazy var logoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "splash")

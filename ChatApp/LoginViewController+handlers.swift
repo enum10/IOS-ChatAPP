@@ -32,6 +32,7 @@ extension LoginViewController: UIImagePickerControllerDelegate, UINavigationCont
         }
         
         if let selectedImage = selectedImagePicker {
+            logoImageSelectedView.image = selectedImage
             logoImage.image = selectedImage
         }
         
@@ -62,9 +63,10 @@ extension LoginViewController: UIImagePickerControllerDelegate, UINavigationCont
             }
             
             let imageName = NSUUID().uuidString
-            let storageRef = FIRStorage.storage().reference().child("profileImages").child("\(imageName).png")
+            let storageRef = FIRStorage.storage().reference().child("profileImages").child("\(imageName).jpeg")
             
-            if let uploadData = UIImagePNGRepresentation(self.logoImage.image!){
+            if let logoImageCached = self.logoImageSelectedView.image, let uploadData = UIImageJPEGRepresentation(logoImageCached, 0.2){
+//            if let uploadData = UIImagePNGRepresentation(self.logoImageSelectedView.image!){
                 storageRef.put(uploadData, metadata: nil, completion: { (metadata, err) in
                     
                     if err != nil {
