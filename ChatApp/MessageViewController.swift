@@ -30,7 +30,7 @@ class MessageViewController: UITableViewController {
         tableView.register(UserCell.self, forCellReuseIdentifier: cellID)
         
         //observeMessages()
-        observeUserMessage()
+        //observeUserMessage()
     }
     
     func observeUserMessage(){
@@ -153,6 +153,10 @@ class MessageViewController: UITableViewController {
     
     func setNavigationBarTitleView(user: User){
         
+        messages.removeAll()
+        messageDictionary.removeAll()
+        tableView.reloadData()
+        observeUserMessage()
         
         let titleView = UIView()
         titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
