@@ -10,6 +10,10 @@ import UIKit
 import Firebase
 
 class MessageViewController: UITableViewController {
+    
+    var messages = [Message]()
+    var messageDictionary = [String:Message]()
+    let cellID = "cellID"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,52 +24,105 @@ class MessageViewController: UITableViewController {
         
         let image = UIImage(named: "create")
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleNewMessage))
-        }
-    
-    func handleTitleTap(){
-        let chatlogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
-        navigationController?.pushViewController(chatlogController, animated: true)
+        
+        checkIfUserIsLoggedIn()
+        
+        tableView.register(UserCell.self, forCellReuseIdentifier: cellID)
+        
+        observeMessages()
     }
     
+    func observeMessages() {
+        let ref = FIRDatabase.database().reference().child("messages")
+        ref.observe(.childAdded, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject]{
+                let message = Message()
+                message.setValuesForKeys(dictionary)
+                //self.messages.append(message)
+                
+                if let toID = message.toID {
+                    self.messageDictionary[toID] = message
+                    
+                    self.messages = Array(self.messageDictionary.values)
+                    self.messages.sort(by: { (m1, m2) -> Bool in
+                        return (m1.timestamp?.intValue)! > (m2.timestamp?.intValue)!
+                    })
+                }
+                
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        //let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cellId")
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellID, for: indexPath) as! UserCell
+        
+        let message = messages[indexPath.row]
+        cell.message = message
+        
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 72
+    }
+
     func handleNewMessage(){
         
         let newMessageController = NewMessageViewController()
+        newMessageController.messagesController = self
         let navcontroller = UINavigationController(rootViewController: newMessageController)
         present(navcontroller, animated: true, completion: nil)
         
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        
-        self.navigationItem.title = ""
-    }
+//    override func viewDidDisappear(_ animated: Bool) {
+//        super.viewDidDisappear(animated)
+//        
+//        self.navigationItem.title = ""
+//    }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        checkIfUserIsLoggedIn()
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        
+//        checkIfUserIsLoggedIn()
+//    }
     
     func checkIfUserIsLoggedIn(){
         if FIRAuth.auth()?.currentUser?.uid == nil{
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         }
         else{
-            let uid = FIRAuth.auth()?.currentUser?.uid
-            
-            FIRDatabase.database().reference().child("users").child(uid!).observe(.value, with: { (snapshot) in
-                
-                if let dictionary = snapshot.value as? [String: AnyObject]{
-//                    self.navigationItem.title = dictionary["name"] as? String
-                    
-                    let user = User()
-                    user.setValuesForKeys(dictionary)
-                    self.setNavigationBarTitleView(user: user)
-                }
-                
-            }, withCancel: nil)
+            fetchUserAndSetNavbarTitle()
         }
+    }
+    
+    func fetchUserAndSetNavbarTitle(){
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else{
+            return
+        }
+        
+        FIRDatabase.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: Any]{
+                //                    self.navigationItem.title = dictionary["name"] as? String
+                
+                let user = User()
+                user.setValuesForKeys(dictionary)
+                self.setNavigationBarTitleView(user: user)
+            }
+            
+        }, withCancel: nil)
     }
     
     func setNavigationBarTitleView(user: User){
@@ -73,6 +130,7 @@ class MessageViewController: UITableViewController {
         
         let titleView = UIView()
         titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        titleView.backgroundColor = .clear
         
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -86,14 +144,20 @@ class MessageViewController: UITableViewController {
         nameLabel.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
         nameLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
         nameLabel.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
-        nameLabel.heightAnchor.constraint(equalToConstant: 40)
+        nameLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         containerView.centerXAnchor.constraint(equalTo: titleView.centerXAnchor).isActive = true
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
         
         self.navigationItem.titleView = titleView
         
-        titleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTitleTap)))
+//        titleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTitleTap)))
+    }
+    
+    func handleTitleTapFor(user: User){
+        let chatlogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatlogController.user = user
+        navigationController?.pushViewController(chatlogController, animated: true)
     }
     
     func handleLogout(){
@@ -105,6 +169,7 @@ class MessageViewController: UITableViewController {
         }
         
         let loginController = LoginViewController()
+        loginController.messagesController = self
         present(loginController, animated: true, completion: nil)
     }
 

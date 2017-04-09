@@ -12,6 +12,7 @@ import Firebase
 class LoginViewController: UIViewController {
     
     var ref: FIRDatabaseReference!
+    var messagesController: MessageViewController?
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -114,6 +115,7 @@ class LoginViewController: UIViewController {
         nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 0 : 1/3)
         nameTextFieldHeightAnchor?.isActive = true
         nameTextField.placeholder = loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? "" : "Name"
+        nameTextField.text = loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? "" : nameTextField.text
         
         emailTextFieldHeightAnchor?.isActive = false
         emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegisterSegmentedControl.selectedSegmentIndex == 0 ? 1/2 : 1/3)
@@ -145,10 +147,11 @@ class LoginViewController: UIViewController {
                 return
             }
             
+            //self.messagesController?.navigationItem.title = ""
+            self.messagesController?.fetchUserAndSetNavbarTitle()
             self.dismiss(animated: true, completion: nil)
         })
     }
-    
     var inputsContainerViewHeightAnchor: NSLayoutConstraint?
     var nameTextFieldHeightAnchor: NSLayoutConstraint?
     var emailTextFieldHeightAnchor: NSLayoutConstraint?

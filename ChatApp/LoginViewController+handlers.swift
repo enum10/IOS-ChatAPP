@@ -63,7 +63,7 @@ extension LoginViewController: UIImagePickerControllerDelegate, UINavigationCont
             }
             
             let imageName = NSUUID().uuidString
-            let storageRef = FIRStorage.storage().reference().child("profileImages").child("\(imageName).jpeg")
+            let storageRef = FIRStorage.storage().reference().child("profileImages").child("\(imageName).jpg")
             
             if let logoImageCached = self.logoImageSelectedView.image, let uploadData = UIImageJPEGRepresentation(logoImageCached, 0.2){
 //            if let uploadData = UIImagePNGRepresentation(self.logoImageSelectedView.image!){
@@ -76,21 +76,27 @@ extension LoginViewController: UIImagePickerControllerDelegate, UINavigationCont
                     
                     if let profileImage = metadata?.downloadURL()?.absoluteString{
                         let values = ["name": name, "email": email, "profileImage": profileImage]
-                        self.registerUserIntoDatabase(uid: uid, values: values as [String : AnyObject])
+                        self.registerUserIntoDatabase(uid: uid, values: values)
                     }
                 })
             }
         })
     }
     
-    private func registerUserIntoDatabase(uid: String, values: [String:AnyObject]){
-        self.ref = FIRDatabase.database().reference(fromURL: "https://chat-ios-b7516.firebaseio.com/").child("users").child(uid)
+    private func registerUserIntoDatabase(uid: String, values: [String:Any]){
+        self.ref = FIRDatabase.database().reference().child("users").child(uid)
         self.ref.updateChildValues(values, withCompletionBlock: { (err, ref) in
             if err != nil{
                 print(err ?? "")
                 return
             }
             
+//            self.messagesController?.fetchUserAndSetNavbarTitle()
+//            self.messagesController?.navigationItem.title = values["name"] as? String
+            
+            let user = User()
+            user.setValuesForKeys(values)
+            self.messagesController?.setNavigationBarTitleView(user: user)
             self.dismiss(animated: true, completion: nil)
         })
     }

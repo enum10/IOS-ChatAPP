@@ -8,7 +8,7 @@
 
 import UIKit
 
-let imageCache = NSCache<NSString, UIImage>()
+let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     
@@ -17,12 +17,12 @@ extension UIImageView {
         self.image = nil
         
         if let cachedImage = imageCache.object(forKey: urlString as NSString){
-            self.image = cachedImage
+            self.image = cachedImage as? UIImage
             return
         }
         //Otherwise
-        let url = URL(string: urlString)
-        let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
+        let url = NSURL(string: urlString)
+        URLSession.shared.dataTask(with: url as! URL, completionHandler: { (data, response, error) in
             if error != nil{
                 print(error ?? "")
                 return
@@ -36,8 +36,7 @@ extension UIImageView {
                     self.image = downloadedImage
                 }
             }
-        }
-        task.resume()
+        }).resume()
         
     }
 }
