@@ -29,7 +29,44 @@ class MessageViewController: UITableViewController {
         
         tableView.register(UserCell.self, forCellReuseIdentifier: cellID)
         
-        observeMessages()
+        //observeMessages()
+        observeUserMessage()
+    }
+    
+    func observeUserMessage(){
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let ref = FIRDatabase.database().reference().child("user_messages").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            
+            let messageId = snapshot.key
+            let messageRef = FIRDatabase.database().reference().child("messages").child(messageId)
+            messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                
+                if let dictionary = snapshot.value as? [String: AnyObject]{
+                    let message = Message()
+                    message.setValuesForKeys(dictionary)
+                    //self.messages.append(message)
+                    
+                    if let toID = message.toID {
+                        self.messageDictionary[toID] = message
+                        
+                        self.messages = Array(self.messageDictionary.values)
+                        self.messages.sort(by: { (m1, m2) -> Bool in
+                            return (m1.timestamp?.intValue)! > (m2.timestamp?.intValue)!
+                        })
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                }
+                
+            }, withCancel: nil)
+            
+        }, withCancel: nil)
     }
     
     func observeMessages() {
