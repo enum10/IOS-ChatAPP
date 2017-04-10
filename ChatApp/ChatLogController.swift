@@ -68,6 +68,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        collectionView?.alwaysBounceVertical = true
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView?.backgroundColor = .white
@@ -160,6 +161,14 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ChatMessageCell
         let message = messages[indexPath.row]
         cell.textView.text = message.text
+        
+        if message.fromID == FIRAuth.auth()?.currentUser?.uid {
+            cell.backgroundColor = ChatMessageCell.blueColor
+            cell.textView.textColor = .white
+        }else{
+            cell.backgroundColor = UIColor(r: 240, g: 240, b: 240)
+            cell.textView.textColor = .black
+        }
         
         cell.bubbleWidthAnchor?.constant = estimatedContainerForText(text: message.text!).width + 32
         

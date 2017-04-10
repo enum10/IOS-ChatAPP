@@ -19,9 +19,11 @@ class ChatMessageCell: UICollectionViewCell {
         return tv
     }()
     
+    static let blueColor = UIColor(r: 232, g: 85, b: 102)
+    
     let bubbleView: UIView = {
         let bv = UIView()
-        bv.backgroundColor = UIColor(r: 232, g: 85, b: 102)
+        bv.backgroundColor = blueColor
         bv.layer.cornerRadius = 16
         bv.layer.masksToBounds = true
         bv.translatesAutoresizingMaskIntoConstraints = false
