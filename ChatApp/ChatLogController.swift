@@ -68,15 +68,22 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView?.backgroundColor = .white
         collectionView?.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
         
         setupInputComponents()
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView?.collectionViewLayout.invalidateLayout()
+    }
+    
     func setupInputComponents(){
         
         let containerView = UIView()
+        containerView.backgroundColor = .white
         containerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(containerView)
         
@@ -133,6 +140,8 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 return
             }
             
+            self.textField.text = nil
+            
             let userMessagesReference = FIRDatabase.database().reference().child("user_messages").child(fromID)
             let messageID = childRef.key
             userMessagesReference.updateChildValues([messageID: 1])
@@ -151,6 +160,8 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ChatMessageCell
         let message = messages[indexPath.row]
         cell.textView.text = message.text
+        
+        cell.bubbleWidthAnchor?.constant = estimatedContainerForText(text: message.text!).width + 32
         
         //cell.backgroundColor = UIColor.blue
         return cell

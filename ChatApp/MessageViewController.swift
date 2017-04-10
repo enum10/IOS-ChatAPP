@@ -50,8 +50,8 @@ class MessageViewController: UITableViewController {
                     message.setValuesForKeys(dictionary)
                     //self.messages.append(message)
                     
-                    if let toID = message.toID {
-                        self.messageDictionary[toID] = message
+                    if let chatPartnerID = message.chatPartnerID() {
+                        self.messageDictionary[chatPartnerID] = message
                         
                         self.messages = Array(self.messageDictionary.values)
                         self.messages.sort(by: { (m1, m2) -> Bool in
@@ -78,8 +78,8 @@ class MessageViewController: UITableViewController {
                 message.setValuesForKeys(dictionary)
                 //self.messages.append(message)
                 
-                if let toID = message.toID {
-                    self.messageDictionary[toID] = message
+                if let chatPartnerID = message.chatPartnerID() {
+                    self.messageDictionary[chatPartnerID] = message
                     
                     self.messages = Array(self.messageDictionary.values)
                     self.messages.sort(by: { (m1, m2) -> Bool in
