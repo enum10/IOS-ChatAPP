@@ -20,15 +20,8 @@ class UserCell: UITableViewCell {
     
     var message: Message? {
         didSet {
-            let chatPartnerId: String?
             
-            if message?.fromID == FIRAuth.auth()?.currentUser?.uid{
-                chatPartnerId = message?.toID
-            }else{
-                chatPartnerId = message?.fromID
-            }
-            
-            if let id = chatPartnerId {
+            if let id = message?.chatPartnerID() {
             
             let ref = FIRDatabase.database().reference().child("users").child(id)
             ref.observeSingleEvent(of: .value, with: { (snapshot) in

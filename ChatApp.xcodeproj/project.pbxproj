@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		032A2BCA1E9AE75B0005A584 /* ChatMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032A2BC91E9AE75B0005A584 /* ChatMessageCell.swift */; };
 		03B8BCCF1E9660F900C77FAB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B8BCCE1E9660F900C77FAB /* AppDelegate.swift */; };
 		03B8BCD11E9660F900C77FAB /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B8BCD01E9660F900C77FAB /* MessageViewController.swift */; };
 		03B8BCD41E9660F900C77FAB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 03B8BCD21E9660F900C77FAB /* Main.storyboard */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		032A2BC91E9AE75B0005A584 /* ChatMessageCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatMessageCell.swift; sourceTree = "<group>"; };
 		03B8BCCB1E9660F900C77FAB /* ChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03B8BCCE1E9660F900C77FAB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		03B8BCD01E9660F900C77FAB /* MessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				03B8BCF91E9A225700C77FAB /* UserCell.swift */,
+				032A2BC91E9AE75B0005A584 /* ChatMessageCell.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -286,6 +289,7 @@
 				03B8BCD11E9660F900C77FAB /* MessageViewController.swift in Sources */,
 				03B8BCCF1E9660F900C77FAB /* AppDelegate.swift in Sources */,
 				03B8BCEC1E974B3E00C77FAB /* User.swift in Sources */,
+				032A2BCA1E9AE75B0005A584 /* ChatMessageCell.swift in Sources */,
 				03B8BCE71E97440C00C77FAB /* NewMessageViewController.swift in Sources */,
 				03B8BCFA1E9A225700C77FAB /* UserCell.swift in Sources */,
 				03B8BCF31E98D7BA00C77FAB /* Extensions.swift in Sources */,

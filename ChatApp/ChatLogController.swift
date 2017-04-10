@@ -9,14 +9,20 @@
 import UIKit
 import Firebase
 
-class ChatLogController: UICollectionViewController, UITextFieldDelegate {
+class ChatLogController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout {
+    
+    let cellId = "cellId"
     
     var user: User?
     {
         didSet {
             navigationItem.title = user?.name
+            
+            observeMessages()
         }
     }
+    
+    var messages = [Message]()
     
     lazy var textField : UITextField = {
         let input = UITextField()
@@ -26,10 +32,44 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate {
         return input
     }()
     
+    func observeMessages(){
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        let userMessageRef = FIRDatabase.database().reference().child("user_messages").child(uid)
+        userMessageRef.observe(.childAdded, with: { (snapshot) in
+            
+            let messageID = snapshot.key
+            let messageRef = FIRDatabase.database().reference().child("messages").child(messageID)
+            messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                
+                guard let dictionary = snapshot.value as? [String:AnyObject] else {
+                    return
+                }
+                
+                let message = Message()
+                message.setValuesForKeys(dictionary)
+                
+                if self.user?.id == message.chatPartnerID() {
+                    self.messages.append(message)
+                    
+                    DispatchQueue.main.async {
+                        self.collectionView?.reloadData()
+                    }
+                }
+                
+            }, withCancel: nil)
+            
+        }, withCancel: nil)
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collectionView?.backgroundColor = .white
+        collectionView?.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
         
         setupInputComponents()
     }
@@ -100,6 +140,24 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate {
             let recipientUserMessageReference = FIRDatabase.database().reference().child("user_messages").child(toID)
             recipientUserMessageReference.updateChildValues([messageID: 1])
         }
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ChatMessageCell
+        let message = messages[indexPath.row]
+        cell.textView.text = message.text
+        
+        //cell.backgroundColor = UIColor.blue
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 80)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
