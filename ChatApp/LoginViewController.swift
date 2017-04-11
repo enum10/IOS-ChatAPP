@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class LoginViewController: UIViewController {
+class LoginViewController: UIViewController, UITextFieldDelegate {
     
     var ref: FIRDatabaseReference!
     var messagesController: MessageViewController?
@@ -165,6 +165,10 @@ class LoginViewController: UIViewController {
         view.addSubview(logoImage)
         view.addSubview(loginRegisterSegmentedControl)
         
+        nameTextField.delegate = self
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
+        
         setupInputsContainerView()
         setupLoginButton()
         setupLogoImage()
@@ -244,7 +248,12 @@ class LoginViewController: UIViewController {
         return .lightContent
     }
 
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        view.endEditing(true)
+        return false
+    }
 }
+
 
 extension UIColor{
     convenience init(r: CGFloat, g: CGFloat, b: CGFloat){

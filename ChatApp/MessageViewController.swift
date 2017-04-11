@@ -59,14 +59,22 @@ class MessageViewController: UITableViewController {
                         })
                     }
                     
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
+                    self.timer?.invalidate()
+                    self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.handleReloadTable), userInfo: nil, repeats: false)
+                    
                 }
                 
             }, withCancel: nil)
             
         }, withCancel: nil)
+    }
+    
+    var timer: Timer?
+    
+    func handleReloadTable() {
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
     
     func observeMessages() {

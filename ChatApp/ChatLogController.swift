@@ -124,31 +124,34 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func handleSend(){
-        let ref = FIRDatabase.database().reference().child("messages")
-        let childRef = ref.childByAutoId()
+        if textField.text != "" {
         
-        let toID = user!.id!
-        let fromID = FIRAuth.auth()!.currentUser!.uid
-        let timestamp = NSNumber(value: Int(NSDate().timeIntervalSince1970))
-        
-        let values: [String: AnyObject] = ["text": textField.text! as AnyObject, "toID": toID as AnyObject, "fromID": fromID as AnyObject, "timestamp": timestamp]
-        //childRef.updateChildValues(values)
-        
-        childRef.updateChildValues(values) { (error, ref) in
+            let ref = FIRDatabase.database().reference().child("messages")
+            let childRef = ref.childByAutoId()
             
-            if error != nil{
-                print(error ?? "")
-                return
+            let toID = user!.id!
+            let fromID = FIRAuth.auth()!.currentUser!.uid
+            let timestamp = NSNumber(value: Int(NSDate().timeIntervalSince1970))
+            
+            let values: [String: AnyObject] = ["text": textField.text! as AnyObject, "toID": toID as AnyObject, "fromID": fromID as AnyObject, "timestamp": timestamp]
+            //childRef.updateChildValues(values)
+            
+            childRef.updateChildValues(values) { (error, ref) in
+                
+                if error != nil{
+                    print(error ?? "")
+                    return
+                }
+                
+                self.textField.text = nil
+                
+                let userMessagesReference = FIRDatabase.database().reference().child("user_messages").child(fromID)
+                let messageID = childRef.key
+                userMessagesReference.updateChildValues([messageID: 1])
+                
+                let recipientUserMessageReference = FIRDatabase.database().reference().child("user_messages").child(toID)
+                recipientUserMessageReference.updateChildValues([messageID: 1])
             }
-            
-            self.textField.text = nil
-            
-            let userMessagesReference = FIRDatabase.database().reference().child("user_messages").child(fromID)
-            let messageID = childRef.key
-            userMessagesReference.updateChildValues([messageID: 1])
-            
-            let recipientUserMessageReference = FIRDatabase.database().reference().child("user_messages").child(toID)
-            recipientUserMessageReference.updateChildValues([messageID: 1])
         }
     }
     
@@ -162,18 +165,31 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         let message = messages[indexPath.row]
         cell.textView.text = message.text
         
-        if message.fromID == FIRAuth.auth()?.currentUser?.uid {
-            cell.backgroundColor = ChatMessageCell.blueColor
-            cell.textView.textColor = .white
-        }else{
-            cell.backgroundColor = UIColor(r: 240, g: 240, b: 240)
-            cell.textView.textColor = .black
-        }
-        
+        setupCell(cell: cell, message: message)
         cell.bubbleWidthAnchor?.constant = estimatedContainerForText(text: message.text!).width + 32
         
         //cell.backgroundColor = UIColor.blue
         return cell
+    }
+    
+    private func setupCell(cell: ChatMessageCell, message: Message) {
+        if let profileImageUrl = self.user?.profileImage {
+            cell.profileImageView.loadImageUsingCacheWith(urlString: profileImageUrl)
+        }
+        
+        if message.fromID == FIRAuth.auth()?.currentUser?.uid {
+            cell.bubbleView.backgroundColor = ChatMessageCell.blueColor
+            cell.textView.textColor = .white
+            cell.bubbleLeftAnchor?.isActive = false
+            cell.bubbleRightAnchor?.isActive = true
+            cell.profileImageView.isHidden = true
+        }else{
+            cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
+            cell.textView.textColor = .black
+            cell.bubbleLeftAnchor?.isActive = true
+            cell.bubbleRightAnchor?.isActive = false
+            cell.profileImageView.isHidden = false
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
