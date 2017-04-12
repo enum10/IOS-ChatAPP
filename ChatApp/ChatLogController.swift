@@ -335,6 +335,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ChatMessageCell
         let message = messages[indexPath.row]
+        cell.isUserInteractionEnabled = false
         cell.textView.text = message.text
         
         setupCell(cell: cell, message: message)
