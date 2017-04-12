@@ -56,16 +56,9 @@ class MessageViewController: UITableViewController {
                         
                         if let chatPartnerID = message.chatPartnerID() {
                             self.messageDictionary[chatPartnerID] = message
-                            
-                            self.messages = Array(self.messageDictionary.values)
-                            self.messages.sort(by: { (m1, m2) -> Bool in
-                                return (m1.timestamp?.intValue)! > (m2.timestamp?.intValue)!
-                            })
                         }
                         
-                        self.timer?.invalidate()
-                        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.handleReloadTable), userInfo: nil, repeats: false)
-                        
+                        self.attemptReloadTable()
                     }
                     
                 }, withCancel: nil)
@@ -77,7 +70,16 @@ class MessageViewController: UITableViewController {
     
     var timer: Timer?
     
+    private func attemptReloadTable() {
+        self.timer?.invalidate()
+        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.handleReloadTable), userInfo: nil, repeats: false)
+    }
+    
     func handleReloadTable() {
+        self.messages = Array(self.messageDictionary.values)
+        self.messages.sort(by: { (m1, m2) -> Bool in
+            return (m1.timestamp?.intValue)! > (m2.timestamp?.intValue)!
+        })
         DispatchQueue.main.async {
             self.tableView.reloadData()
         }
