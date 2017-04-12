@@ -53,6 +53,11 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 
                 DispatchQueue.main.async {
                     self.collectionView?.reloadData()
+                    
+                    if self.messages.count > 0 {
+                        let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                        self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
+                    }
                 }
                 
             }, withCancel: nil)
@@ -73,7 +78,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         
 //        setupInputComponents()
 //        
-//        setupKeyboardObservers()
+        setupKeyboardObservers()
     }
     
     lazy var inputContainerView: UIView = {
@@ -188,9 +193,18 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func setupKeyboardObservers(){
-        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillAppear), name: Notification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardDidShow), name: Notification.Name.UIKeyboardDidShow, object: nil)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillDisAppear), name: Notification.Name.UIKeyboardWillHide, object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillAppear), name: Notification.Name.UIKeyboardWillShow, object: nil)
+//        
+//        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillDisAppear), name: Notification.Name.UIKeyboardWillHide, object: nil)
+    }
+    
+    func handleKeyboardDidShow() {
+        if messages.count > 0 {
+            let indexPath = IndexPath(item: messages.count - 1, section: 0)
+            collectionView?.scrollToItem(at: indexPath, at: .top, animated: true)
+        }
     }
     
     func handleKeyboardWillAppear(notification: Notification){
