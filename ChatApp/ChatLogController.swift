@@ -283,7 +283,9 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         if let text = messages[indexPath.item].text {
             height = estimatedContainerForText(text: text).height + 20
         }
-        return CGSize(width: view.frame.width, height: height)
+        
+        let width = UIScreen.main.bounds.width
+        return CGSize(width: width, height: height)
     }
     
     private func estimatedContainerForText(text: String) -> CGRect {
