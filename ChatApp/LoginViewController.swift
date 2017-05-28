@@ -13,6 +13,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     var ref: FIRDatabaseReference!
     var messagesController: MessageViewController?
+    var activeField: UITextField?
+    var scrollView: UIScrollView?
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -152,6 +154,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             self.dismiss(animated: true, completion: nil)
         })
     }
+    
+    
+    
     var inputsContainerViewHeightAnchor: NSLayoutConstraint?
     var nameTextFieldHeightAnchor: NSLayoutConstraint?
     var emailTextFieldHeightAnchor: NSLayoutConstraint?
@@ -168,11 +173,60 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         nameTextField.delegate = self
         emailTextField.delegate = self
         passwordTextField.delegate = self
+        //scrollView = UIScrollView(frame: UIScreen.main.bounds)
         
         setupInputsContainerView()
         setupLoginButton()
         setupLogoImage()
         setupLoginRegisterSegmentedControl()
+        setupKeyboardResponders()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+    }
+    
+    func setupKeyboardResponders() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+    }
+    
+    func keyboardWasShown(notification: Notification) {
+        self.scrollView?.isScrollEnabled = true
+        var info = notification.userInfo
+        let keyboardSize = (info?[UIKeyboardFrameEndUserInfoKey] as AnyObject).cgRectValue.size
+        let contentInsets: UIEdgeInsets = UIEdgeInsetsMake(0, 0, keyboardSize.height, 0)
+        
+        scrollView?.contentInset = contentInsets
+        scrollView?.scrollIndicatorInsets = contentInsets
+        
+        var aRect: CGRect = self.view.frame
+        aRect.size.height -= keyboardSize.height
+        if let aField = self.activeField {
+            if !aRect.contains(aField.frame.origin) {
+                self.scrollView?.scrollRectToVisible(aField.frame, animated: true)
+            }
+        }
+    }
+    
+    func keyboardWillBeHidden(notification: Notification) {
+        var info = notification.userInfo
+        let keyboardSize = (info?[UIKeyboardFrameBeginUserInfoKey] as AnyObject).cgRectValue.size
+        let contentInsets: UIEdgeInsets = UIEdgeInsetsMake(0, 0, -keyboardSize.height, 0)
+        scrollView?.contentInset = contentInsets
+        scrollView?.scrollIndicatorInsets = contentInsets
+        self.view.endEditing(true)
+        scrollView?.isScrollEnabled = false
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        self.activeField = textField
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        self.activeField = nil
     }
     
     func setupLogoImage(){
@@ -249,8 +303,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        view.endEditing(true)
-        return false
+        textField.resignFirstResponder()
+        return true
     }
 }
 
